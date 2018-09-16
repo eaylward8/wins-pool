@@ -22,7 +22,7 @@ var ownerTeamList = [
 ]
 
 function associateRecords() {
-  return ownerTeamList.map(function(ownerTeam) {
+  ownerTeamList.map(function(ownerTeam) {
     ownerTeam.records = [];
     ownerTeam.wins = 0;
     ownerTeam.losses = 0;
@@ -37,6 +37,7 @@ function associateRecords() {
     })
     return ownerTeam;
   })
+  return ownerTeamList.sort(function(teamA, teamB) { return teamB.wins - teamA.wins })
 }
 
 function sendRequest(url) {
@@ -71,7 +72,7 @@ function appendRows() {
     Object.keys(ownerTeam).forEach(function(key) {
       if (key === 'records') { return; }
       var td = document.createElement('td');
-      td.textContent = ownerTeam[key];
+      key === 'teams' ? td.textContent = ownerTeam[key].join(', ') : td.textContent = ownerTeam[key];
       tr.appendChild(td);
     });
     tbody.appendChild(tr);
