@@ -119,10 +119,24 @@ function updateDraw(drawRows) {
   teamData[team2]['t'] += 1;
 }
 
+function determineWeek() {
+  var counter = 0;
+  var endWeek = new Date('2018-09-11T01:00:00'); // Tuesday after Week 1
+  var now = new Date;
+
+  while (now > endWeek) {
+    counter++;
+    endWeek = new Date(endWeek.setDate(endWeek.getDate() + 7));
+  }
+  return counter;
+}
+
 // RUN
 function run() {
-  promises = [];
-  for (var i = 1; i <= 2; i++) {
+  var weeksCompleted = determineWeek();
+  if (weeksCompleted === 0) { return; }
+  var promises = [];
+  for (var i = 1; i <= weeksCompleted; i++) {
     var url = 'https://secret-coast-86046.herokuapp.com/https://www.pro-football-reference.com/years/2018/week_' + i + '.htm'
     promises.push(sendRequest(url));
   }
