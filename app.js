@@ -9,25 +9,25 @@ var teamData = teams.reduce(function(acc, team) {
 }, {});
 
 var ownerTeamList = [
-  { owner: 'Ali', teams: ['Patriots', 'Seahawks', 'Lions'] },
-  { owner: 'Wads', teams: ['Steelers', 'Titans', 'Buccaneers'] },
-  { owner: 'Barrasse', teams: ['Packers', 'Chiefs', 'Bills'] },
-  { owner: 'Gar', teams: ['Rams', 'Ravens', 'Cowboys'] },
-  { owner: 'Rick', teams: ['Vikings', '49ers', 'Jets'] },
-  { owner: 'Smith', teams: ['Eagles', 'Redskins', 'Dolphins'] },
-  { owner: 'Abdo', teams: ['Saints', 'Broncos', 'Bears'] },
-  { owner: 'Stimp', teams: ['Jaguars', 'Raiders', 'Colts'] },
-  { owner: 'Denim', teams: ['Chargers', 'Panthers', 'Giants'] },
-  { owner: 'Mio', teams: ['Texans', 'Falcons', 'Bengals'] }
+  { owner: 'Ali', teams: ['Patriots', 'Seahawks', 'Lions'], records: [], wins: 0, losses: 0, ties: 0, diff: 0 },
+  { owner: 'Wads', teams: ['Steelers', 'Titans', 'Buccaneers'], records: [], wins: 0, losses: 0, ties: 0, diff: 0 },
+  { owner: 'Barrasse', teams: ['Packers', 'Chiefs', 'Bills'], records: [], wins: 0, losses: 0, ties: 0, diff: 0 },
+  { owner: 'Gar', teams: ['Rams', 'Ravens', 'Cowboys'], records: [], wins: 0, losses: 0, ties: 0, diff: 0 },
+  { owner: 'Rick', teams: ['Vikings', '49ers', 'Jets'], records: [], wins: 0, losses: 0, ties: 0, diff: 0 },
+  { owner: 'Smith', teams: ['Eagles', 'Redskins', 'Dolphins'], records: [], wins: 0, losses: 0, ties: 0, diff: 0 },
+  { owner: 'Abdo', teams: ['Saints', 'Broncos', 'Bears'], records: [], wins: 0, losses: 0, ties: 0, diff: 0 },
+  { owner: 'Stimp', teams: ['Jaguars', 'Raiders', 'Colts'], records: [], wins: 0, losses: 0, ties: 0, diff: 0 },
+  { owner: 'Denim', teams: ['Chargers', 'Panthers', 'Giants'], records: [], wins: 0, losses: 0, ties: 0, diff: 0 },
+  { owner: 'Mio', teams: ['Texans', 'Falcons', 'Bengals'], records: [], wins: 0, losses: 0, ties: 0, diff: 0 }
 ]
 
 function associateRecords() {
   ownerTeamList.map(function(ownerTeam) {
-    ownerTeam.records = [];
-    ownerTeam.wins = 0;
-    ownerTeam.losses = 0;
-    ownerTeam.ties = 0;
-    ownerTeam.diff = 0;
+    // ownerTeam.records = [];
+    // ownerTeam.wins = 0;
+    // ownerTeam.losses = 0;
+    // ownerTeam.ties = 0;
+    // ownerTeam.diff = 0;
     ownerTeam.teams.forEach(function(team) {
       ownerTeam.records.push({ [team]: teamData[team] });
       ownerTeam.wins += teamData[team]['w']
@@ -37,7 +37,20 @@ function associateRecords() {
     })
     return ownerTeam;
   })
-  return ownerTeamList.sort(function(teamA, teamB) { return teamB.wins - teamA.wins })
+  return sortStandings(ownerTeamList);
+}
+
+function sortStandings(records) {
+  return records.sort(function(ownerA, ownerB) {
+    if (ownerA.wins > ownerB.wins) { return -1 }
+    if (ownerA.wins < ownerB.wins) { return 1 }
+
+    if (ownerA.losses < ownerB.losses) { return -1 }
+    if (ownerA.losses > ownerB.losses) { return 1 }
+
+    if (ownerA.diff > ownerB.diff) { return -1 }
+    if (ownerA.diff < ownerB.diff) { return 1 }
+  });
 }
 
 function sendRequest(url) {
@@ -56,15 +69,6 @@ function sendRequest(url) {
   })
 }
 
-sendRequest('https://cors-anywhere.herokuapp.com/https://www.pro-football-reference.com/years/2018/week_1.htm')
-  .then(function(html) {
-    scrapeScoreData(html);
-    // console.log(teamData);
-    console.log(associateRecords());
-
-    appendRows()
-  });
-
 function appendRows() {
   var tbody = document.querySelector('tbody');
   ownerTeamList.forEach(function(ownerTeam) {
@@ -78,18 +82,6 @@ function appendRows() {
     tbody.appendChild(tr);
   });
 }
-
-// fetch('https://cors-anywhere.herokuapp.com/https://www.pro-football-reference.com/years/2018/week_1.htm')
-//   .then(function(res) {
-//     return res.text();
-//   })
-//   .then(function(html) {
-//     debugger;
-//     // need to create new DOMParser and feed it the html string
-//     scrapeScoreData(html);
-//     console.log(teamData);
-//   });
-
 
 function scrapeScoreData(html) {
   html.querySelectorAll('table.teams tbody').forEach(function(body) {
@@ -126,3 +118,33 @@ function updateDraw(drawRows) {
   teamData[team1]['t'] += 1;
   teamData[team2]['t'] += 1;
 }
+
+// RUN
+function run() {
+  promises = [];
+  for (var i = 1; i <= 2; i++) {
+    var url = 'https://secret-coast-86046.herokuapp.com/https://www.pro-football-reference.com/years/2018/week_' + i + '.htm'
+    promises.push(sendRequest(url));
+  }
+  Promise.all(promises).then(function(htmls) {
+    htmls.forEach(function(html) {
+      scrapeScoreData(html);
+    })
+    associateRecords();
+    appendRows();
+  });
+}
+
+run();
+
+
+// fetch('https://cors-anywhere.herokuapp.com/https://www.pro-football-reference.com/years/2018/week_1.htm')
+//   .then(function(res) {
+//     return res.text();
+//   })
+//   .then(function(html) {
+//     debugger;
+//     // need to create new DOMParser and feed it the html string
+//     scrapeScoreData(html);
+//     console.log(teamData);
+//   });
